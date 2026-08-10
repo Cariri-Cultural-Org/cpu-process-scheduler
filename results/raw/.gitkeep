@@ -1,0 +1,7 @@
+# Pasta reservada para os resultados BRUTOS de cada execução do simulador
+# (uma saída por combinação de cenário x seed x algoritmo).
+#
+# Gerada por scripts/run_experiments.sh. Pode crescer muito (>= 4 cenários
+# x >= 100 seeds x 4 algoritmos), por isso o conteúdo é ignorado pelo Git
+# (ver .gitignore) — apenas esta pasta é versionada, para preservar a
+# estrutura do repositório.

@@ -53,3 +53,23 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Build outputs do simulador (Makefile)
+/build/
+/bin/
+
+# Python (scripts/)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Resultados brutos das execuções (podem ser grandes; gerados
+# localmente por scripts/run_experiments.sh). Tabelas consolidadas e
+# gráficos finais (results/consolidated/, results/graphs/) SÃO
+# versionados normalmente.
+results/raw/*
+!results/raw/.gitkeep
+
+# Arquivos de sistema
+.DS_Store

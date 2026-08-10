@@ -1,0 +1,7 @@
+# Dependências sugeridas para os scripts de análise (frente: Cícero Jesus).
+# Ajustar conforme as bibliotecas efetivamente utilizadas em scripts/.
+#
+# pandas
+# numpy
+# scipy
+# matplotlib

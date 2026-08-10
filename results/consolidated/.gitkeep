@@ -1,0 +1,6 @@
+# Pasta reservada para as tabelas CONSOLIDADAS (ex.: CSV com média e
+# IC95% por cenário/algoritmo/métrica), geradas por
+# scripts/consolidate_results.py a partir de results/raw/.
+#
+# Estas são as tabelas efetivamente usadas no artigo (report/) — devem
+# ser versionadas no Git.

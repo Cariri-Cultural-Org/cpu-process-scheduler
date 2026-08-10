@@ -1,0 +1,5 @@
+# Pasta reservada para os GRÁFICOS finais (imagens), gerados por
+# scripts/generate_graphs.py a partir de results/consolidated/.
+#
+# Estas são as figuras efetivamente usadas no artigo (report/) — devem
+# ser versionadas no Git.
