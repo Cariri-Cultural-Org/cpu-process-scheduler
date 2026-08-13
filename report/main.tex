@@ -1,0 +1,109 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+% Mensagem usada nas partes que ainda dependem do desenvolvimento do projeto.
+\newcommand{\pendencia}{\textit{Pendência de implementação.}}
+
+\begin{document}
+
+\title{Simulador de Escalonamento de Processos: Análise Comparativa de Algoritmos de Escalonamento de CPU}
+
+\author{
+Alan Mendes,
+Antônio Neto,
+Diogo Gomes,
+Cícero Jesus
+}
+
+\maketitle
+
+\begin{abstract}
+Este artigo apresenta a proposta de desenvolvimento de um simulador de escalonamento de processos em linguagem C. O sistema deverá gerar cargas de trabalho reprodutíveis, executar os algoritmos First-Come, First-Served (FCFS), Round Robin e Prioridade não preemptiva e compará-los com um algoritmo de escalonamento proposto pela equipe. A avaliação será realizada em cenários com diferentes perfis de uso de CPU, entrada e saída e prioridades. Como métricas, serão considerados o tempo médio de retorno, o número de trocas de contexto e o índice de justiça de Jain aplicado ao \textit{slowdown} dos processos. Para fornecer rigor estatístico, cada cenário será executado com múltiplas seeds e os resultados serão apresentados por meio da média e do intervalo de confiança de 95\%. O projeto encontra-se em fase de planejamento; portanto, as decisões finais de modelagem, o algoritmo próprio, os resultados experimentais e as conclusões serão incorporados após a implementação e a execução dos experimentos.
+\end{abstract}
+
+\begin{IEEEkeywords}
+escalonamento de processos, sistemas operacionais, simulação, avaliação de desempenho, justiça
+\end{IEEEkeywords}
+
+\section{Introdução}
+
+O escalonamento de processos é uma função central dos sistemas operacionais, pois determina qual processo apto utilizará a CPU em cada instante. Essa decisão influencia o tempo de resposta, o tempo de retorno, a utilização dos recursos e a distribuição do progresso entre os processos~\cite{silberschatz2018,tanenbaum2014}. Diferentes políticas podem favorecer objetivos distintos, de modo que não existe necessariamente uma única estratégia ideal para todas as cargas de trabalho.
+
+Algoritmos clássicos, como FCFS, Round Robin e escalonamento por Prioridade, apresentam comportamentos diferentes diante de processos curtos, processos longos, operações de entrada e saída (E/S) e prioridades desbalanceadas. A comparação controlada dessas políticas permite observar compromissos entre desempenho, custo de troca de contexto e justiça. Um simulador oferece um ambiente adequado para essa análise, pois possibilita repetir as mesmas cargas de trabalho e variar os parâmetros sem modificar um sistema operacional real.
+
+Este trabalho tem como objetivo desenvolver, em C, um simulador de escalonamento de processos e utilizá-lo para comparar três algoritmos clássicos com uma política proposta pela equipe. As cargas serão geradas de forma pseudoaleatória e reprodutível a partir de seeds conhecidas. A avaliação abrangerá quatro perfis de carga e utilizará métricas quantitativas acompanhadas de intervalos de confiança.
+
+As contribuições previstas são: (i) um simulador capaz de representar estados de processos, rajadas de CPU, operações de E/S, preempção e trocas de contexto; (ii) uma infraestrutura reprodutível para geração de cargas e execução em lote; (iii) uma política de escalonamento própria; e (iv) uma análise experimental dos algoritmos considerados. Como o desenvolvimento ainda não foi iniciado, este documento registra a estrutura planejada do artigo e identifica explicitamente os pontos que deverão ser preenchidos durante o projeto.
+
+\section{Modelo do Sistema}
+
+\pendencia
+
+\section{Algoritmos de Escalonamento}
+
+\subsection{First-Come, First-Served}
+
+\pendencia
+
+\subsection{Round Robin}
+
+\pendencia
+
+\subsection{Prioridade não Preemptiva}
+
+\pendencia
+
+\subsection{Algoritmo Proposto}
+
+\pendencia
+
+\section{Metodologia Experimental}
+
+\subsection{Geração das Cargas de Trabalho}
+
+\pendencia
+
+\subsection{Métricas}
+
+\pendencia
+
+\subsection{Procedimento Estatístico e Ambiente}
+
+\pendencia
+
+\section{Resultados e Discussão}
+
+\pendencia
+
+\subsection{Tempo Médio de Retorno}
+
+\pendencia
+
+\subsection{Trocas de Contexto}
+
+\pendencia
+
+\subsection{Justiça dos Slowdowns}
+
+\pendencia
+
+\subsection{Avaliação do Algoritmo Proposto}
+
+\pendencia
+
+\section{Conclusão}
+
+\pendencia
+
+\bibliographystyle{IEEEtran}
+\bibliography{referencias}
+
+\end{document}
