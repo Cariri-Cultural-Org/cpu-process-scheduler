@@ -1,14 +1,9 @@
-# Modelagem do Simulador — Decisões de Projeto
-
-> Template a ser preenchido pela equipe. O enunciado exige explicitamente que estas decisões
-> sejam definidas e documentadas, e que sejam as **mesmas para todos os algoritmos** dentro
-> de um mesmo experimento/cenário (ver `docs/PROJETO.md`, seções 3, 4 e 5). O conteúdo deste
-> arquivo, depois de preenchido, alimenta diretamente a seção de metodologia do artigo.
+# Modelagem do Simulador — Decisões de Projeto (Metodologia)
 
 ## 1. Convenção de prioridade
 
-- [ ] Valores **menores** representam maior prioridade, ou valores **maiores**?
-- Justificativa:
+- Valores **maiores** representam maior prioridade.
+- Justificativa: representa uma modelagem mais intuitíva.
 
 ## 2. Modelagem de E/S (Entrada/Saída)
 
