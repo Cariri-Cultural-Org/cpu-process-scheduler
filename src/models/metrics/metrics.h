@@ -1,32 +1,41 @@
 #ifndef METRICS_H
 #define METRICS_H
 
-/* =====================================================================
- * metrics/metrics.h
- * =====================================================================
- *
- * Frente responsável: Cícero Jesus (métricas, estatística e
- * visualização).
- *
- * Objetivo:
- *   Declarar a interface de cálculo das métricas obrigatórias a
- *   partir dos dados brutos produzidos por uma execução da simulação.
- *
- * O que deve ser definido aqui:
- *   - Assinatura das funções de cálculo de:
- *       - Turnaround médio
- *       - Número de trocas de contexto
- *       - Slowdown por processo (turnaround / tempo mínimo ideal)
- *       - Índice de Jain aplicado ao slowdown (métrica de justiça)
- *   - Formato de saída dos resultados de uma execução (ex.: uma linha
- *     por execução, identificando cenário, seed, algoritmo e valores
- *     das métricas), para ser consumido pelos scripts em scripts/
- *
- * Requisitos do enunciado relacionados:
- *   - Seção 9 (Resultados esperados) — ver docs/PROJETO.md, inclui as
- *     fórmulas de slowdown e do índice de Jain
- *
- * TODO: implementar. Este arquivo é apenas um esqueleto inicial.
- * ===================================================================== */
+#include <stdbool.h>
+#include <stddef.h>
 
-#endif /* METRICS_H */
+typedef struct {
+    double arrival_time;
+    double completion_time;
+    double total_cpu_time;
+    double total_io_time;
+} ProcessMetricsSample;
+
+typedef struct {
+    double mean_turnaround;
+    size_t context_switches;
+    double jain_slowdown_percent;
+} SimulationMetrics;
+
+double metrics_turnaround(double arrival_time, double completion_time);
+double metrics_ideal_time(double total_cpu_time, double total_io_time);
+double metrics_slowdown(double turnaround, double ideal_time);
+
+double metrics_mean_turnaround(
+    const ProcessMetricsSample *samples,
+    size_t count
+);
+
+double metrics_jain_slowdown_percent(
+    const ProcessMetricsSample *samples,
+    size_t count
+);
+
+bool metrics_calculate(
+    const ProcessMetricsSample *samples,
+    size_t count,
+    size_t context_switches,
+    SimulationMetrics *result
+);
+
+#endif
