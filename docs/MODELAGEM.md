@@ -7,21 +7,64 @@
 
 ## 2. Modelagem de E/S (Entrada/Saída)
 
-- Quando um processo solicita E/S:
-- Por quanto tempo ele permanece bloqueado:
-- Múltiplas operações de E/S podem ocorrer em paralelo?
-- Existe um ou mais dispositivos de E/S, cada um com fila própria?
-- Quando o processo retorna à fila de prontos:
-- Discussão: como essa modelagem pode influenciar os resultados obtidos:
+> Decisões implementadas em `src/models/simulator/simulator.c` e cobertas por
+> `tests/test_simulator.c`.
+
+- Quando um processo solicita E/S: ao **terminar uma rajada de CPU** cuja próxima rajada é do
+  tipo E/S. Como as rajadas são geradas alternando `CPU -> E/S -> CPU` (seção 7), a solicitação
+  nunca interrompe uma rajada de CPU pela metade — o processo sempre deixa a CPU com a rajada
+  de CPU concluída.
+- Por quanto tempo ele permanece bloqueado: exatamente a **duração da rajada de E/S** sorteada
+  pelo gerador de carga para aquele processo, independentemente do algoritmo de escalonamento
+  em uso.
+- Múltiplas operações de E/S podem ocorrer em paralelo? **Sim, sem limite.** Vários processos
+  podem estar bloqueados simultaneamente e todos progridem ao mesmo tempo.
+- Existe um ou mais dispositivos de E/S, cada um com fila própria? Modelamos **paralelismo
+  ilimitado de E/S** (equivalente a um dispositivo dedicado por processo), portanto **não há
+  fila de espera por dispositivo**: um processo bloqueado nunca espera outro processo terminar
+  a E/S dele. Internamente o simulador mantém apenas uma lista de processos bloqueados
+  ordenada pelo instante de liberação.
+- Quando o processo retorna à fila de prontos: no **instante exato** em que a duração da E/S se
+  esgota. Em caso de empate de instante, entram na fila de prontos primeiro os processos que
+  retornam da E/S (já estavam no sistema), depois os que chegam ao sistema e, por último, um
+  processo que tenha deixado a CPU naquele instante por fim de quantum.
+- Discussão: como essa modelagem pode influenciar os resultados obtidos: sem disputa por
+  dispositivo, o tempo de E/S é **constante e igual para todos os algoritmos**, o que isola o
+  efeito da política de escalonamento de CPU — que é justamente o objeto de comparação do
+  trabalho. O custo dessa escolha é otimista: em um sistema real a contenção de dispositivo
+  aumentaria o tempo bloqueado, sobretudo no cenário I/O-bound, e tenderia a aproximar os
+  algoritmos entre si (parte do turnaround passaria a ser explicada pela E/S, não pelo
+  escalonador). Também favorece algoritmos que liberam a CPU cedo (Round Robin com quantum
+  pequeno, processos I/O-bound), já que a E/S iniciada nunca é retardada por outro processo.
 
 ## 3. Modelagem da troca de contexto
 
-- Quando ocorre:
-- Quanto tempo consome (valor configurável, **> 0** nos experimentos principais):
-- A CPU fica indisponível para execução de processos durante a troca?
-- A troca é contabilizada quando a CPU sai do estado ocioso para executar um processo?
-- Valor usado nos experimentos principais:
+> Decisões implementadas em `src/models/simulator/simulator.c` e cobertas por
+> `tests/test_simulator.c`.
+
+- Quando ocorre: sempre que a CPU passa a executar um processo **diferente** do último que a
+  ocupou — seja por fim de rajada de CPU, por bloqueio em E/S, por fim de quantum (Round Robin)
+  ou por término de um processo. Redespachar o **mesmo** processo (ex.: quantum expirado sem
+  nenhum outro processo pronto) **não** conta como troca, seguindo a definição da métrica no
+  enunciado ("quantidade de mudanças de processo executando na CPU").
+- Quanto tempo consome (valor configurável, **> 0** nos experimentos principais): um valor fixo
+  em unidades de tempo, o mesmo para todos os algoritmos dentro de um experimento, cobrado
+  imediatamente antes de o processo escolhido começar a executar.
+- A CPU fica indisponível para execução de processos durante a troca? **Sim.** O relógio avança
+  o custo da troca sem que nenhum processo execute; esse tempo é contabilizado à parte
+  (`context_switch_time`) e não entra no tempo de CPU útil (`cpu_busy_time`).
+- A troca é contabilizada quando a CPU sai do estado ocioso para executar um processo? **Sim**,
+  desde que o processo despachado seja diferente do último que ocupou a CPU (o que inclui o
+  primeiro despacho da simulação). Se a CPU ficou ociosa e volta a executar exatamente o mesmo
+  processo de antes, não há mudança de processo e nada é cobrado.
+- Valor usado nos experimentos principais: **1 unidade de tempo** (proposta a validar com o
+  time ao implementar `config.h`), da mesma ordem de grandeza da menor rajada de CPU gerada
+  (1 unidade) e pequeno o bastante para não dominar as rajadas típicas, mas suficiente para
+  que o excesso de preempções do Round Robin apareça nas métricas.
 - (Opcional) valor usado nos experimentos complementares com custo de troca de contexto = 0:
+  **0 unidades**, mantendo todo o resto idêntico. Nesse modo as trocas continuam sendo
+  **contadas** (a métrica obrigatória não muda), apenas deixam de consumir tempo, o que permite
+  separar o efeito da política do efeito do overhead.
 
 ## 4. Modelo de chegada dos processos
 
