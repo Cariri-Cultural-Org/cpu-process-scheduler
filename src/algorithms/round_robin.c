@@ -23,4 +23,33 @@
  * TODO: implementar. Este arquivo é apenas um esqueleto inicial.
  * ===================================================================== */
 
-/* #include "../scheduler.h" */
+#include "../models/scheduler.h"
+
+int scheduler_select_round_robin(
+    Process *ready_queue,
+    size_t ready_count,
+    int current_time,
+    const SchedulerConfig *config
+) {
+    (void)current_time;
+    (void)config;
+
+    for (size_t i = 0; i < ready_count; i++) {
+        if (ready_queue[i].state == READY) {
+            return (int)i;
+        }
+    }
+
+    return SCHEDULER_NO_PROCESS;
+}
+
+int scheduler_round_robin_should_preempt(
+    int elapsed_in_current_quantum,
+    const SchedulerConfig *config
+) {
+    if (config == NULL || config->quantum <= 0) {
+        return 0;
+    }
+
+    return elapsed_in_current_quantum >= config->quantum;
+}
