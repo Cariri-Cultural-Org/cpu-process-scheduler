@@ -26,14 +26,13 @@ OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 # ---- Testes (Unity, adicionado como submodule em tests/unity) ----
 UNITY_DIR := tests/unity/src
 TEST_DIR := tests
-TEST_BIN := $(BIN_DIR)/test_runner
 
-TEST_SRCS := $(shell find $(TEST_DIR) -maxdepth 1 -name '*.c')
+# Um binário por arquivo tests/test_*.c (cada um com seu próprio main
+# via UNITY_BEGIN/END) para não colidir símbolos entre arquivos de teste.
+TEST_SRCS := $(shell find $(TEST_DIR) -maxdepth 1 -name 'test_*.c')
+TEST_BINS := $(patsubst $(TEST_DIR)/%.c,$(BIN_DIR)/%,$(TEST_SRCS))
 UNITY_SRC := $(UNITY_DIR)/unity.c
 
-# Módulos do simulador exercitados pelos testes. main.c fica de fora
-# porque já define sua própria função main() (conflitaria com a do
-# test runner do Unity).
 TESTED_SRCS := $(filter-out $(SRC_DIR)/main.c,$(SRCS))
 
 .PHONY: all clean run test
@@ -56,6 +55,8 @@ clean:
 run: all
 	./$(TARGET)
 
-test: | $(BIN_DIR)
-	$(CC) $(CFLAGS) -I$(UNITY_DIR) -o $(TEST_BIN) $(TEST_SRCS) $(UNITY_SRC) $(TESTED_SRCS) -lm
-	./$(TEST_BIN)
+test: $(TEST_BINS)
+	@for t in $(TEST_BINS); do ./$$t || exit 1; done
+
+$(BIN_DIR)/%: $(TEST_DIR)/%.c $(UNITY_SRC) $(TESTED_SRCS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) -I$(UNITY_DIR) -o $@ $< $(UNITY_SRC) $(TESTED_SRCS) -lm
