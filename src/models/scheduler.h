@@ -1,6 +1,10 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <stddef.h>
+
+#include "process/process.h"
+
 /* =====================================================================
  * scheduler.h
  * =====================================================================
@@ -10,7 +14,7 @@
  *
  * Objetivo:
  *   Definir o contrato comum que todos os algoritmos de escalonamento
- *   (src/algorithms/*.c) devem seguir para poderem ser plugados no
+ *   em src/algorithms/ devem seguir para poderem ser plugados no
  *   núcleo da simulação (src/simulator.c) de forma intercambiável.
  *
  * O que deve ser definido aqui:
@@ -24,7 +28,57 @@
  * Requisitos do enunciado relacionados:
  *   - Seção 8 (Algoritmos de escalonamento) — ver docs/PROJETO.md
  *
- * TODO: implementar. Este arquivo é apenas um esqueleto inicial.
+ * Convenção adotada:
+ *   As funções de escalonamento recebem a fila de prontos como um
+ *   vetor de Process e retornam o índice do processo escolhido. Caso
+ *   não exista processo pronto, retornam SCHEDULER_NO_PROCESS.
  * ===================================================================== */
+
+#define SCHEDULER_NO_PROCESS (-1)
+
+typedef enum {
+    SCHEDULER_FCFS = 0,
+    SCHEDULER_ROUND_ROBIN,
+    SCHEDULER_PRIORITY,
+    SCHEDULER_CUSTOM
+} SchedulerAlgorithm;
+
+typedef struct {
+    int quantum;
+    int context_switch_cost;
+} SchedulerConfig;
+
+typedef int (*SchedulerSelectFn)(
+    Process *ready_queue,
+    size_t ready_count,
+    int current_time,
+    const SchedulerConfig *config
+);
+
+int scheduler_select_fcfs(
+    Process *ready_queue,
+    size_t ready_count,
+    int current_time,
+    const SchedulerConfig *config
+);
+
+int scheduler_select_round_robin(
+    Process *ready_queue,
+    size_t ready_count,
+    int current_time,
+    const SchedulerConfig *config
+);
+
+int scheduler_round_robin_should_preempt(
+    int elapsed_in_current_quantum,
+    const SchedulerConfig *config
+);
+
+int scheduler_select_priority(
+    Process *ready_queue,
+    size_t ready_count,
+    int current_time,
+    const SchedulerConfig *config
+);
 
 #endif /* SCHEDULER_H */
