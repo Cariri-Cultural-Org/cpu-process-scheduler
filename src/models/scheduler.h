@@ -81,4 +81,19 @@ int scheduler_select_priority(
     const SchedulerConfig *config
 );
 
+/* Algoritmo próprio (SJF Preditivo com Aging) — ver docs/MODELAGEM.md,
+ * seção 6, e src/algorithms/predictive_sjf.c. */
+int scheduler_select_predictive_sjf(
+    Process *ready_queue,
+    size_t ready_count,
+    int current_time,
+    const SchedulerConfig *config
+);
+
+/* Zera o estado interno do SJF Preditivo (histórico global e por
+ * processo). Necessário entre execuções que reutilizem o mesmo
+ * processo do SO (ex.: suíte de testes); não é preciso em execuções
+ * normais do binário (uma simulação por processo). */
+void scheduler_predictive_sjf_reset(void);
+
 #endif /* SCHEDULER_H */

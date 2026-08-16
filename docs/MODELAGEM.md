@@ -100,6 +100,20 @@
     "longos" cheguem e acumulem histórico antes de processos "curtos" chegarem.
   - Overhead de manter estado (τ, tempo de espera) por processo — desprezível computacionalmente,
     mas é uma diferença estrutural em relação aos clássicos, que não mantêm esse tipo de estado.
+  - Implementação (`src/algorithms/predictive_sjf.c`): como o contrato de `scheduler.h` não
+    passa estado persistente entre chamadas nem timestamp de entrada na fila de prontos, τ é
+    recalculado a cada chamada a partir do próprio histórico de rajadas de CPU já concluídas do
+    processo (`bursts[0..current_burst_index)`, nunca a rajada atual/futura); apenas o
+    acumulador global (fallback de τ(0)) e o instante de entrada na fila de prontos (para o
+    aging) são mantidos como estado interno ao arquivo. Consequência: a última rajada de CPU de
+    um processo (a que o finaliza) nunca é revisitada pela fila de prontos, então seu valor real
+    nunca é incorporado ao acumulador global nem à própria série do processo — limitação da
+    implementação (não do algoritmo em si), que converge à medida que mais processos
+    multi-rajada passam pela fila.
+  - `α = 0,5`, `β = 0,1` e o fallback inicial de τ (`10.0`) estão como constantes locais em
+    `predictive_sjf.c` — não em `config.h`, que segue vazio (núcleo/Alan).
+- Critério de desempate entre processos com a mesma prioridade efetiva: menor `arrival_time`;
+  persistindo o empate, menor `pid` (mesmo padrão dos algoritmos clássicos, seção 5).
 - Baseado em alguma ideia/artigo/fonte existente? Qual? O que foi modificado e por quê?
   A estimativa de rajada por média exponencial é a técnica clássica de previsão de próxima
   rajada de CPU descrita em Silberschatz, Galvin e Gagne, *Operating System Concepts* (a citar
