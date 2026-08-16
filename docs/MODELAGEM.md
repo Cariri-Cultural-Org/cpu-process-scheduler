@@ -43,9 +43,15 @@
 
 ## 5. Critérios de desempate dos algoritmos clássicos
 
-- FCFS — desempate entre processos que chegam no mesmo instante:
-- Round Robin — quantum utilizado nos experimentos principais:
-- Prioridade (não preemptivo) — desempate entre processos de mesma prioridade:
+- FCFS — desempate entre processos que chegam no mesmo instante: em caso de empate no tempo
+  de chegada, executa primeiro o processo com menor `pid`; se ainda houver empate, mantém-se a
+  ordem em que os processos aparecem na fila de prontos.
+- Round Robin — quantum utilizado nos experimentos principais: `4` unidades de tempo. Quando
+  o quantum expira e a rajada de CPU ainda não terminou, o processo volta ao final da fila de
+  prontos e a troca de contexto é contabilizada pela simulação.
+- Prioridade (não preemptivo) — desempate entre processos de mesma prioridade: como valores
+  maiores representam maior prioridade, escolhe-se primeiro o maior `priority`; em caso de
+  empate, aplica-se FCFS (menor tempo de chegada) e, persistindo o empate, menor `pid`.
 
 ## 6. Algoritmo próprio
 
