@@ -73,3 +73,7 @@ results/raw/*
 
 # Arquivos de sistema
 .DS_Store
+
+# Conexto para Claude/Codex
+.claude
+.codex
