@@ -74,8 +74,10 @@
      rajada observada).
   3. Prioridade efetiva de escalonamento = `τ estimado − β · tempo_de_espera`, onde `β` é o
      fator de aging (configurável; valor inicial proposto `β = 0,1`). Entre os processos
-     prontos, escolhe-se o de **menor** prioridade efetiva (seguindo a mesma convenção
-     "menor valor = mais prioritário" a decidir na seção 1).
+     prontos, escolhe-se o de **menor** prioridade efetiva. Atenção: esse "menor" é interno ao
+     algoritmo (menor rajada estimada vence, como no SJF) e **não** usa o campo `priority` do
+     processo nem a convenção da seção 1 (valores maiores = maior prioridade) — as duas noções
+     de prioridade são independentes neste algoritmo.
   4. Seleção não-preemptiva: como Priority e FCFS, a escolha só ocorre quando a CPU fica livre
      (fim de rajada, bloqueio por E/S ou preempção por chegada não se aplica aqui).
 - Por que o algoritmo deveria melhorar algum aspecto da simulação: espera-se turnaround médio
@@ -110,8 +112,8 @@ número de requisições de E/S, distribuição de prioridades):
 > cenários usam ≥1000 processos e ≥100 seeds nos experimentos principais (seção 5).
 
 1. Aleatório equilibrado: número de rajadas de CPU por processo uniforme em [1, 5]; duração de
-   cada rajada de CPU uniforme em [1, 20]; número de requisições de E/S por processo uniforme em
-   [0, 3] (uma a menos que o número de rajadas de CPU, alternando CPU→E/S→CPU); duração de cada
+   cada rajada de CPU uniforme em [1, 20]; número de requisições de E/S por processo = número de
+   rajadas de CPU − 1 (uniforme em [0, 4], alternando CPU→E/S→CPU); duração de cada
    E/S uniforme em [5, 15]; prioridade uniforme em [1, 10]; taxa de chegada `λ` moderada (mistura
    representativa de curtos/longos e com/sem E/S).
 2. I/O-bound: número de rajadas de CPU por processo uniforme em [3, 7] (mais trocas com E/S);
@@ -123,6 +125,6 @@ número de requisições de E/S, distribuição de prioridades):
    E/S uniforme em [0, 1]; duração de cada E/S uniforme em [5, 15]; prioridade uniforme em
    [1, 10].
 4. Prioridades desbalanceadas: mesma distribuição de rajadas/E/S do cenário 1 (aleatório
-   equilibrado), variando apenas a prioridade: 80% dos processos com prioridade no intervalo
-   "alta" e 20% no intervalo "baixa" (os intervalos concretos dependem da convenção definida na
-   seção 1 — ex., se menor valor = maior prioridade, usar 80% em [1, 3] e 20% em [8, 10]).
+   equilibrado), variando apenas a prioridade: seguindo a convenção da seção 1 (valores maiores
+   = maior prioridade), 80% dos processos com prioridade "baixa" em [1, 3] e 20% com prioridade
+   "alta" em [8, 10].
