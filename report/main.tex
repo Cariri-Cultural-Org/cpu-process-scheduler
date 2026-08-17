@@ -44,8 +44,25 @@ Este trabalho tem como objetivo desenvolver, em C, um simulador de escalonamento
 As contribuições previstas são: (i) um simulador capaz de representar estados de processos, rajadas de CPU, operações de E/S, preempção e trocas de contexto; (ii) uma infraestrutura reprodutível para geração de cargas e execução em lote; (iii) uma política de escalonamento própria; e (iv) uma análise experimental dos algoritmos considerados. Como o desenvolvimento ainda não foi iniciado, este documento registra a estrutura planejada do artigo e identifica explicitamente os pontos que deverão ser preenchidos durante o projeto.
 
 \section{Modelo do Sistema}
+\label{sec:modelo-sistema}
 
-\pendencia
+\subsection{Processos e Estados}
+
+Cada processo simulado é representado por um identificador único (\textit{pid}), o instante de chegada ao sistema, uma prioridade e uma sequência de rajadas que alternam entre uso de CPU e operações de entrada e saída (E/S), no padrão CPU $\rightarrow$ E/S $\rightarrow$ CPU $\rightarrow \dots \rightarrow$ CPU; a última rajada de um processo é sempre de CPU, de modo que ele deixa o sistema imediatamente após concluir uso de CPU, nunca em E/S. Ao longo da simulação, cada processo transita pelos estados \textit{novo}, \textit{pronto}, \textit{executando}, \textit{bloqueado} e \textit{finalizado}, conforme entra no sistema, disputa a CPU, é despachado pelo escalonador, solicita E/S e é concluído.
+
+A prioridade é um valor inteiro no qual valores \textbf{maiores} representam maior prioridade — convenção adotada por ser considerada mais intuitiva e usada de forma consistente em todos os algoritmos e experimentos.
+
+\subsection{Simulação por Eventos e Fila de Prontos}
+
+O núcleo da simulação avança o tempo por eventos (chegada de processo, término de rajada de CPU, término de E/S e expiração de quantum), em vez de um laço de tempo discreto passo a passo, o que permite simular cargas com $10^3$ a $10^4$ processos sem custo computacional proporcional ao tempo total simulado. A fila de prontos contém exclusivamente processos no estado \textit{pronto}, isto é, aptos a usar a CPU no instante corrente; a escolha de qual processo da fila é despachado em seguida é delegada ao algoritmo de escalonamento ativo (FCFS, Round Robin, Prioridade ou o algoritmo próprio da equipe), que recebe a fila de prontos e o instante atual e devolve o processo escolhido, sem acesso a informação sobre processos que ainda não chegaram ao sistema nem sobre a duração real de rajadas futuras.
+
+\subsection{Modelagem de Entrada e Saída}
+
+Ao concluir uma rajada de CPU cuja próxima rajada é de E/S, o processo deixa a CPU e passa ao estado \textit{bloqueado} por exatamente a duração da rajada de E/S sorteada para ele na geração da carga (Seção~\ref{sec:geracao-cargas}), independentemente do algoritmo de escalonamento em uso. O simulador modela paralelismo ilimitado de E/S — equivalente a um dispositivo dedicado por processo —, portanto não há fila de espera por dispositivo nem contenção entre processos bloqueados simultaneamente: cada um retorna à fila de prontos exatamente no instante em que sua própria E/S se esgota. Essa escolha isola o efeito da política de escalonamento de CPU, que é o objeto de comparação deste trabalho, do efeito de contenção de dispositivos de E/S; o custo é uma modelagem otimista em relação a um sistema real, especialmente no cenário \textit{I/O-bound} (Seção~\ref{sec:geracao-cargas}), onde a ausência de fila de E/S tende a favorecer algoritmos que liberam a CPU cedo.
+
+\subsection{Custo de Troca de Contexto}
+
+Sempre que a CPU passa a executar um processo diferente do último que a ocupou — por fim de rajada, bloqueio em E/S, expiração de quantum ou término de processo —, um custo fixo e configurável de troca de contexto é cobrado antes de o processo escolhido começar a executar; durante esse intervalo a CPU permanece indisponível e o tempo é contabilizado separadamente do tempo de CPU útil. Redespachar o mesmo processo que já ocupava a CPU não é contado como troca. O mesmo valor de custo de troca de contexto é usado por todos os algoritmos dentro de um mesmo experimento, condição necessária para que a comparação entre políticas de escalonamento não seja confundida com diferenças de overhead de troca.
 
 \section{Algoritmos de Escalonamento}
 
@@ -62,14 +79,80 @@ As contribuições previstas são: (i) um simulador capaz de representar estados
 \pendencia
 
 \subsection{Algoritmo Proposto}
+\label{sec:algoritmo-proposto}
 
-\pendencia
+O algoritmo próprio da equipe, denominado \textbf{SJF Preditivo com Aging}, tem como objetivo aproximar o benefício do \textit{Shortest Job First} (SJF) clássico — minimizar o tempo médio de retorno priorizando processos "curtos" — sem exigir conhecimento prévio da duração da próxima rajada de CPU, informação que um sistema operacional real não possui no momento do escalonamento. Em vez disso, cada processo mantém uma estimativa $\tau$ da duração de sua próxima rajada, construída exclusivamente a partir do histórico de rajadas de CPU já concluídas por ele mesmo, e a decisão é ajustada por um termo de \textit{aging} baseado no tempo de espera na fila de prontos, para evitar que processos com histórico de rajadas longas sofram inanição diante de processos "curtos" recém-chegados.
+
+\textbf{Informações usadas.} O algoritmo utiliza apenas: (i) a duração real de cada rajada de CPU já concluída pelo próprio processo (histórico individual, nunca de outros processos); e (ii) o tempo de espera acumulado do processo na fila de prontos, desde que entrou nela pela última vez. A duração da rajada de CPU atual ou futura do processo, bem como qualquer informação sobre processos que ainda vão chegar ao sistema, nunca é utilizada — respeitando a restrição do enunciado de que o algoritmo próprio não pode usar conhecimento futuro.
+
+\textbf{Estimativa da próxima rajada.} A estimativa $\tau$ é atualizada ao final de cada rajada de CPU real $t_n$ por média móvel exponencial:
+\begin{equation}
+\tau_{n+1} = \alpha \cdot t_n + (1 - \alpha) \cdot \tau_n, \quad 0 < \alpha \le 1
+\label{eq:tau}
+\end{equation}
+com $\alpha = 0{,}5$ nos experimentos principais. Para a primeira rajada de um processo, sem histórico próprio, usa-se como estimativa inicial $\tau_0$ a duração média de todas as rajadas de CPU já concluídas por quaisquer processos até aquele momento da execução, com um valor padrão de $10$ unidades de tempo como \textit{fallback} enquanto nenhuma rajada tiver sido observada.
+
+\textbf{Prioridade efetiva e aging.} Entre os processos prontos, o próximo a executar é o de \textbf{menor} prioridade efetiva
+\begin{equation}
+\mathit{prio}_{ef}(p) = \tau_p - \beta \cdot \mathit{espera}_p
+\label{eq:prio-efetiva}
+\end{equation}
+onde $\mathit{espera}_p$ é o tempo que $p$ já aguarda na fila de prontos e $\beta = 0{,}1$ é o fator de \textit{aging} nos experimentos principais. Essa prioridade efetiva é interna ao algoritmo — menor rajada estimada favorece o processo, como no SJF — e é \textbf{independente} do campo de prioridade do processo (Seção~\ref{sec:modelo-sistema}), que não é utilizado por este algoritmo. O Algoritmo~\ref{alg:predictive-sjf} resume a seleção; como Prioridade e FCFS, a escolha é \textbf{não preemptiva} e ocorre apenas quando a CPU fica livre.
+
+\begin{algorithm}[t]
+\caption{Seleção do próximo processo — SJF Preditivo com Aging}
+\label{alg:predictive-sjf}
+\begin{algorithmic}[1]
+\REQUIRE fila de prontos $Q$, instante atual $t_{\mathit{atual}}$
+\STATE $\mathit{selecionado} \gets$ nulo
+\FOR{cada processo $p \in Q$}
+    \STATE $\tau_p \gets$ estimativa de $p$ pela Equação~\eqref{eq:tau}
+    \STATE $\mathit{espera}_p \gets t_{\mathit{atual}} - (\text{instante em que } p \text{ entrou na fila})$
+    \STATE $\mathit{prio}_{ef}(p) \gets \tau_p - \beta \cdot \mathit{espera}_p$
+    \IF{$\mathit{selecionado}$ é nulo \OR $\mathit{prio}_{ef}(p) < \mathit{prio}_{ef}(\mathit{selecionado})$}
+        \STATE $\mathit{selecionado} \gets p$
+    \ENDIF
+\ENDFOR
+\RETURN $\mathit{selecionado}$
+\end{algorithmic}
+\end{algorithm}
+
+Em caso de empate na prioridade efetiva, desempata-se primeiro pelo menor instante de chegada e, persistindo o empate, pelo menor \textit{pid} — critério análogo ao adotado nos demais algoritmos avaliados, para manter consistência entre as comparações.
+
+\textbf{Benefício esperado.} Espera-se tempo médio de retorno menor que FCFS e Prioridade, aproximando-se do SJF ideal à medida que as estimativas convergem para o comportamento real de cada processo, com melhor equilíbrio entre os \textit{slowdowns} dos processos (índice de Jain) do que um SJF preditivo "puro" sem aging, já que o termo de aging evita que processos historicamente longos fiquem indefinidamente atrás de processos curtos recém-chegados.
+
+\textbf{Limitações.} A estimativa da primeira rajada de cada processo é necessariamente imprecisa, por não haver histórico ainda; o algoritmo é sensível à escolha de $\alpha$ (memória curta vs. longa do histórico) e $\beta$ (força do aging), exigindo ajuste empírico; pode sofrer, em menor grau, do efeito comboio do SJF clássico caso vários processos longos acumulem histórico antes de processos curtos chegarem ao sistema; e mantém estado por processo ($\tau$, tempo de espera), overhead computacionalmente desprezível mas estruturalmente distinto dos algoritmos clássicos avaliados, que não mantêm esse tipo de estado.
+
+\textbf{Relação com trabalhos anteriores.} A técnica de estimar a próxima rajada de CPU por média móvel exponencial é clássica na literatura de sistemas operacionais~\cite{silberschatz2018}. A contribuição da equipe é combinar essa estimativa com um termo de aging baseado no tempo de espera, formando uma prioridade efetiva híbrida — mecanismo de combate à inanição ausente no SJF preditivo "puro" descrito na literatura.
 
 \section{Metodologia Experimental}
 
 \subsection{Geração das Cargas de Trabalho}
+\label{sec:geracao-cargas}
 
-\pendencia
+As cargas de trabalho são geradas de forma pseudoaleatória e determinística a partir de uma \textit{seed}: a mesma combinação de cenário, seed e número de processos produz sempre exatamente a mesma carga, requisito de reprodutibilidade do enunciado. O gerador usa um algoritmo pseudoaleatório próprio (\textit{xorshift32}), em vez de depender da biblioteca padrão do C, para garantir que a sequência gerada por uma seed seja idêntica em qualquer plataforma de execução.
+
+O instante de chegada de cada processo segue um processo de chegada de Poisson: o intervalo entre chegadas consecutivas é sorteado de uma distribuição exponencial de taxa média $\lambda$, configurável por cenário mas igual para todos os algoritmos comparados dentro de um mesmo cenário. Chegadas em intervalos aleatórios foram preferidas a todos os processos chegando no instante $0$ porque esse último caso eliminaria qualquer efeito de escalonamento \textit{online} — decisões tomadas sem saber quem ainda vai chegar —, que é justamente o aspecto mais realista de um sistema operacional e o que mais diferencia os algoritmos entre si, em especial o algoritmo próprio (Seção~\ref{sec:algoritmo-proposto}), cuja estimativa de rajada só faz sentido quando processos chegam ao longo do tempo.
+
+Para cada processo, o número de rajadas de CPU é sorteado dentro de uma faixa que depende do cenário, e as rajadas alternam CPU $\rightarrow$ E/S $\rightarrow$ CPU $\rightarrow \dots \rightarrow$ CPU, com uma rajada de E/S sorteada entre cada par de rajadas de CPU consecutivas; a duração de cada rajada de CPU e de cada rajada de E/S também é sorteada dentro de faixas dependentes do cenário. A Tabela~\ref{tab:cenarios} resume os quatro cenários obrigatórios do enunciado e os parâmetros usados na geração de cada um.
+
+\begin{table*}[t]
+\centering
+\caption{Parâmetros de geração de carga por cenário (unidades de tempo abstratas)}
+\label{tab:cenarios}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Cenário} & \textbf{Rajadas de CPU} & \textbf{Duração CPU} & \textbf{Duração E/S} & \textbf{Prioridade} & \textbf{$\lambda$} \\
+\hline
+Aleatório equilibrado & $[1,5]$ & $[1,20]$ & $[5,15]$ & $[1,10]$ uniforme & $0{,}5$ \\
+I/O-bound & $[3,7]$ & $[1,5]$ & $[10,30]$ & $[1,10]$ uniforme & $0{,}5$ \\
+CPU-bound / longos & $[1,2]$ & $[20,50]$ & $[5,15]$ & $[1,10]$ uniforme & $0{,}3$ \\
+Prioridades desbalanceadas & $[1,5]$ & $[1,20]$ & $[5,15]$ & $80\%$ em $[1,3]$, $20\%$ em $[8,10]$ & $0{,}5$ \\
+\hline
+\end{tabular}
+\end{table*}
+
+O cenário \textit{Prioridades desbalanceadas} usa a mesma distribuição de rajadas de CPU e de E/S do cenário \textit{Aleatório equilibrado}, variando apenas a distribuição de prioridades, para isolar o efeito do desbalanceamento de prioridades dos demais fatores de carga. Em todos os experimentos principais, cada combinação de cenário e algoritmo é executada com pelo menos $1000$ processos e pelo menos $100$ seeds distintas, com as mesmas seeds reaproveitadas entre os quatro algoritmos comparados dentro de um mesmo cenário, conforme exigido pelo enunciado.
 
 \subsection{Métricas}
 
