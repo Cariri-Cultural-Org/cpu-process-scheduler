@@ -17,7 +17,7 @@
  * Requisitos do enunciado relacionados:
  *   - Seção 8 (Algoritmos de escalonamento) — ver docs/PROJETO.md
  *
- * TODO: implementar. Este arquivo é apenas um esqueleto inicial.
+ * Implementado conforme o contrato de src/models/scheduler.h.
  * ===================================================================== */
 
 #include "../models/scheduler.h"
