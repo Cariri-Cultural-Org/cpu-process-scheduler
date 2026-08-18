@@ -230,7 +230,8 @@ static SchedulerSelectFn select_function(SchedulerAlgorithm algorithm) {
             return scheduler_select_round_robin;
         case SCHEDULER_PRIORITY:
             return scheduler_select_priority;
-        case SCHEDULER_CUSTOM: /* ainda não implementado (custom_algorithm.c) */
+        case SCHEDULER_CUSTOM: /* SJF Preditivo com Aging (predictive_sjf.c) */
+            return scheduler_select_predictive_sjf;
         default:
             return NULL;
     }
