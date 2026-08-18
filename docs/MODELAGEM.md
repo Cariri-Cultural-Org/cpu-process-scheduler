@@ -153,8 +153,10 @@
     nunca é incorporado ao acumulador global nem à própria série do processo — limitação da
     implementação (não do algoritmo em si), que converge à medida que mais processos
     multi-rajada passam pela fila.
-  - `α = 0,5`, `β = 0,1` e o fallback inicial de τ (`10.0`) estão como constantes locais em
-    `predictive_sjf.c` — não em `config.h`, que segue vazio (núcleo/Alan).
+  - `α = 0,5`, `β = 0,1` e o fallback inicial de τ (`10.0`) são definidos em `config.h`
+    (`PREDICTIVE_SJF_ALPHA`, `PREDICTIVE_SJF_BETA`, `PREDICTIVE_SJF_DEFAULT_TAU_FALLBACK`) e
+    consumidos por `predictive_sjf.c`, para que fiquem centralizados com os demais parâmetros
+    dos experimentos.
 - Critério de desempate entre processos com a mesma prioridade efetiva: menor `arrival_time`;
   persistindo o empate, menor `pid` (mesmo padrão dos algoritmos clássicos, seção 5).
 - Baseado em alguma ideia/artigo/fonte existente? Qual? O que foi modificado e por quê?
