@@ -33,19 +33,14 @@
  * simulação; converge à medida que mais processos multi-rajada passam
  * pela fila.
  *
- * α, β e o fallback inicial de τ estão como constantes locais aqui (e
- * não em config.h, que segue vazio) até que o núcleo defina esse
- * arquivo — valores propostos em docs/MODELAGEM.md, seção 6.
+ * α, β e o fallback inicial de τ são centralizados em config.h (ver
+ * docs/MODELAGEM.md, seção 6).
  * ===================================================================== */
 
 #include "../models/scheduler.h"
+#include "../models/config.h"
 
 #include <stdlib.h>
-
-/* Valores iniciais propostos em docs/MODELAGEM.md, seção 6. */
-static const double ALPHA = 0.5;
-static const double BETA = 0.1;
-static const double DEFAULT_TAU_FALLBACK = 10.0;
 
 typedef struct {
     int pid;
@@ -124,11 +119,11 @@ static void accumulate_completed_bursts(PidState *state, const Process *process)
 static double estimate_tau(const Process *process) {
     double tau = g_completed_count > 0
         ? g_completed_sum / (double)g_completed_count
-        : DEFAULT_TAU_FALLBACK;
+        : PREDICTIVE_SJF_DEFAULT_TAU_FALLBACK;
 
     for (int i = 0; i < process->current_burst_index; i++) {
         if (process->bursts[i].type == CPU) {
-            tau = ALPHA * (double)process->bursts[i].duration + (1.0 - ALPHA) * tau;
+            tau = PREDICTIVE_SJF_ALPHA * (double)process->bursts[i].duration + (1.0 - PREDICTIVE_SJF_ALPHA) * tau;
         }
     }
 
@@ -167,7 +162,7 @@ int scheduler_select_predictive_sjf(
 
         const double tau = estimate_tau(candidate);
         const double wait = waiting_time(state, candidate, current_time);
-        const double effective_priority = tau - BETA * wait;
+        const double effective_priority = tau - PREDICTIVE_SJF_BETA * wait;
 
         if (selected == SCHEDULER_NO_PROCESS) {
             selected = (int)i;

@@ -35,26 +35,32 @@ A divisão de tarefas entre os integrantes está em [`docs/DIVISAO_TAREFAS.md`](
 
 ```
 .
-├── src/                    # Código-fonte do simulador (C)
-│   ├── main.c              # Ponto de entrada / integração
-│   ├── process.h / .c      # Modelo de processo
-│   ├── simulator.h / .c    # Núcleo da simulação (fila de prontos, E/S, troca de contexto)
-│   ├── scheduler.h         # Contrato comum dos algoritmos de escalonamento
-│   ├── config.h            # Parâmetros de configuração dos experimentos
-│   ├── algorithms/         # FCFS, Round Robin, Prioridade e algoritmo próprio
-│   ├── workload/           # Geração de carga de trabalho controlada por seed
-│   └── metrics/            # Cálculo de métricas (turnaround, trocas de contexto, Jain)
-├── scripts/                # Scripts auxiliares (execução em lote, consolidação, gráficos, estatística)
-├── results/                # Resultados das execuções (brutos, consolidados, gráficos)
-├── report/                 # Artigo científico (relatório final)
-├── slides/                 # Slides da apresentação
-├── docs/                   # Documentação do projeto
+├── src/                          # Código-fonte do simulador (C)
+│   ├── main.c                    # Ponto de entrada / integração (parsing de CLI, execução)
+│   ├── models/
+│   │   ├── config.h              # Parâmetros de configuração dos experimentos
+│   │   ├── scheduler.h           # Contrato comum dos algoritmos de escalonamento
+│   │   ├── process/              # Modelo de processo (process.h / process.c)
+│   │   ├── simulator/            # Núcleo da simulação (fila de prontos, E/S, troca de contexto)
+│   │   ├── metrics/              # Cálculo de métricas (turnaround, trocas de contexto, Jain)
+│   │   └── workload/             # Geração de carga de trabalho controlada por seed (workload_generator.h / .c)
+│   └── algorithms/               # FCFS, Round Robin, Prioridade e algoritmo próprio (predictive_sjf)
+├── tests/                        # Testes unitários (Unity, ver "Como rodar os testes")
+├── scripts/                      # Scripts auxiliares (execução em lote, consolidação, gráficos, estatística)
+├── results/                      # Resultados das execuções (brutos, consolidados, gráficos)
+├── report/                       # Artigo científico (relatório final)
+├── slides/                       # Slides da apresentação
+├── docs/                         # Documentação do projeto
 └── Makefile
 ```
 
-Cada arquivo do esqueleto acima contém, em formato de comentário, uma descrição do que deve
-ser implementado nele e a frente de trabalho responsável — ver a divisão completa em
-`docs/DIVISAO_TAREFAS.md`.
+O núcleo do simulador já está implementado e testado: `main.c`, os módulos em `src/models/`
+(config, scheduler, process, simulator, metrics, workload) e os quatro algoritmos em
+`src/algorithms/` (fcfs, round_robin, priority, predictive_sjf), cada um com testes
+correspondentes em `tests/` (ver "Como rodar os testes"). O que ainda permanece como esqueleto
+— com comentários descrevendo o que falta implementar e a frente de trabalho responsável — são
+apenas os scripts `scripts/consolidate_results.py`, `scripts/generate_graphs.py` e
+`scripts/run_experiments.sh`. Ver a divisão completa em `docs/DIVISAO_TAREFAS.md`.
 
 ## Como compilar
 
@@ -64,6 +70,43 @@ make
 
 Compila o simulador em `bin/simulador` a partir de tudo que existir em `src/`. Ajustar o
 `Makefile` conforme necessário à medida que o projeto evoluir.
+
+## Como rodar uma simulação
+
+```
+bin/simulador --scenario <balanced|io_bound|cpu_bound|priority_skewed>
+              --seed <unsigned long>
+              --algorithm <fcfs|round_robin|priority|predictive_sjf>
+              [--processes N] [--quantum Q] [--cs-cost C] [--header] [--help]
+```
+
+Os valores padrão de `--processes` (1000), `--quantum` (4) e `--cs-cost` (1) vêm das macros
+`CONFIG_MIN_PROCESSES`, `CONFIG_RR_QUANTUM` e `CONFIG_CONTEXT_SWITCH_COST` em
+`src/models/config.h`.
+
+A saída é uma única linha CSV em stdout com o resultado da execução; use `--header` para
+emitir também a linha de cabeçalho antes dos dados. Colunas:
+
+`scenario,seed,algorithm,n_processes,quantum,context_switch_cost,mean_turnaround,context_switches,jain_slowdown_percent,total_time,cpu_busy_time,context_switch_time,idle_time`
+
+Exemplo:
+
+```
+$ ./bin/simulador --scenario balanced --seed 42 --algorithm fcfs --header
+scenario,seed,algorithm,n_processes,quantum,context_switch_cost,mean_turnaround,context_switches,jain_slowdown_percent,total_time,cpu_busy_time,context_switch_time,idle_time
+balanced,42,fcfs,1000,4,1,15241.292000,2896,14.905603,32533,29635,2896,2
+```
+
+## Como rodar os testes
+
+```
+git submodule update --init --recursive   # necessário na primeira vez, baixa o Unity em tests/unity
+make test
+```
+
+Compila e executa um binário por arquivo `tests/test_*.c` usando o framework Unity
+(submodule em `tests/unity`); `test_stats.c` também aciona a suíte `unittest` em Python de
+`scripts/stats.py`.
 
 ## Como rodar os experimentos
 

@@ -203,15 +203,31 @@ void test_simulador_rejeita_round_robin_sem_quantum(void) {
     free_workload(&workload);
 }
 
-void test_simulador_rejeita_algoritmo_ainda_nao_implementado(void) {
-    /* o algoritmo próprio (src/algorithms/custom_algorithm.c) ainda não
-     * foi implementado: a simulação deve falhar em vez de executar. */
+void test_simulador_executa_o_algoritmo_proprio(void) {
+    /* o algoritmo próprio (SJF Preditivo com Aging, em
+     * src/algorithms/predictive_sjf.c) está plugado no núcleo: a
+     * simulação deve executar em vez de ser rejeitada.
+     *
+     * Sem histórico de rajadas, os dois processos partem da mesma
+     * estimativa inicial de tau e do mesmo tempo de espera, então o
+     * empate cai no critério de desempate (chegada e, em seguida, pid)
+     * e P1 executa primeiro — mesma ordem do FCFS neste caso. */
+    scheduler_predictive_sjf_reset();
+
     Workload workload = two_cpu_bound_processes();
     SimulationConfig config = config_of(SCHEDULER_CUSTOM, 0, 0);
     SimulationResult result;
 
-    TEST_ASSERT_FALSE(simulator_run(&workload, &config, &result));
+    TEST_ASSERT_TRUE(simulator_run(&workload, &config, &result));
 
+    TEST_ASSERT_EQUAL_UINT64(2, result.count);
+    assert_double_close(5.0, result.samples[0].completion_time); /* P1: 0 -> 5 */
+    assert_double_close(8.0, result.samples[1].completion_time); /* P2: 5 -> 8 */
+    TEST_ASSERT_EQUAL(8, result.total_time);
+    TEST_ASSERT_EQUAL(8, result.cpu_busy_time);
+    TEST_ASSERT_EQUAL(0, result.idle_time);
+
+    simulator_free_result(&result);
     free_workload(&workload);
 }
 
@@ -605,7 +621,7 @@ int main(void) {
 
     RUN_TEST(test_simulador_rejeita_entradas_invalidas);
     RUN_TEST(test_simulador_rejeita_round_robin_sem_quantum);
-    RUN_TEST(test_simulador_rejeita_algoritmo_ainda_nao_implementado);
+    RUN_TEST(test_simulador_executa_o_algoritmo_proprio);
 
     RUN_TEST(test_fcfs_executa_na_ordem_de_chegada);
     RUN_TEST(test_amostras_registram_chegada_e_tempo_minimo_ideal);
