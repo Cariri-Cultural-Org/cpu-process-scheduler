@@ -6,11 +6,9 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{float}
+\usepackage{placeins}
 \usepackage{graphicx}
 \usepackage{amsmath}
-
-% Mensagem usada nas partes que ainda dependem do desenvolvimento do projeto.
-\newcommand{\pendencia}{\textit{Pendência de implementação.}}
 
 \begin{document}
 
@@ -26,7 +24,7 @@ Cícero Jesus
 \maketitle
 
 \begin{abstract}
-Este artigo apresenta a proposta de desenvolvimento de um simulador de escalonamento de processos em linguagem C. O sistema deverá gerar cargas de trabalho reprodutíveis, executar os algoritmos First-Come, First-Served (FCFS), Round Robin e Prioridade não preemptiva e compará-los com um algoritmo de escalonamento proposto pela equipe. A avaliação será realizada em cenários com diferentes perfis de uso de CPU, entrada e saída e prioridades. Como métricas, serão considerados o tempo médio de retorno, o número de trocas de contexto e o índice de justiça de Jain aplicado ao \textit{slowdown} dos processos. Para fornecer rigor estatístico, cada cenário será executado com múltiplas seeds e os resultados serão apresentados por meio da média e do intervalo de confiança de 95\%. O projeto encontra-se em fase de planejamento; portanto, as decisões finais de modelagem, o algoritmo próprio, os resultados experimentais e as conclusões serão incorporados após a implementação e a execução dos experimentos.
+Este artigo apresenta um simulador de escalonamento de processos implementado em C. O sistema gera cargas de trabalho reprodutíveis, executa First-Come, First-Served (FCFS), Round Robin e Prioridade não preemptiva e os compara ao algoritmo próprio SJF Preditivo com \textit{aging}. Foram avaliados quatro perfis de carga, com 1000 processos e 100 \textit{seeds} por combinação. As métricas são turnaround médio, trocas de contexto e índice de Jain do \textit{slowdown}; os resultados são reportados como média e intervalo de confiança de 95\%. O SJF Preditivo elevou substancialmente a justiça em relação a FCFS e Prioridade, sobretudo em cargas I/O-bound, mas não minimizou o turnaround; Round Robin foi o mais justo, ao custo de mais trocas de contexto e maior turnaround.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -39,9 +37,9 @@ O escalonamento de processos é uma função central dos sistemas operacionais, 
 
 Algoritmos clássicos, como FCFS, Round Robin e escalonamento por Prioridade, apresentam comportamentos diferentes diante de processos curtos, processos longos, operações de entrada e saída (E/S) e prioridades desbalanceadas. A comparação controlada dessas políticas permite observar compromissos entre desempenho, custo de troca de contexto e justiça. Um simulador oferece um ambiente adequado para essa análise, pois possibilita repetir as mesmas cargas de trabalho e variar os parâmetros sem modificar um sistema operacional real.
 
-Este trabalho tem como objetivo desenvolver, em C, um simulador de escalonamento de processos e utilizá-lo para comparar três algoritmos clássicos com uma política proposta pela equipe. As cargas serão geradas de forma pseudoaleatória e reprodutível a partir de seeds conhecidas. A avaliação abrangerá quatro perfis de carga e utilizará métricas quantitativas acompanhadas de intervalos de confiança.
+Este trabalho implementa, em C, um simulador de escalonamento de processos para comparar três algoritmos clássicos com uma política proposta pela equipe. As cargas são geradas de forma pseudoaleatória e reprodutível a partir de \textit{seeds} conhecidas. A avaliação abrange quatro perfis de carga e utiliza métricas quantitativas acompanhadas de intervalos de confiança.
 
-As contribuições previstas são: (i) um simulador capaz de representar estados de processos, rajadas de CPU, operações de E/S, preempção e trocas de contexto; (ii) uma infraestrutura reprodutível para geração de cargas e execução em lote; (iii) uma política de escalonamento própria; e (iv) uma análise experimental dos algoritmos considerados. Como o desenvolvimento ainda não foi iniciado, este documento registra a estrutura planejada do artigo e identifica explicitamente os pontos que deverão ser preenchidos durante o projeto.
+As contribuições são: (i) um simulador por eventos que representa estados de processos, rajadas de CPU, operações de E/S, preempção e trocas de contexto; (ii) uma infraestrutura reprodutível para geração de cargas, execução em lote, consolidação e gráficos; (iii) uma política própria baseada em previsão de rajadas e \textit{aging}; e (iv) uma análise experimental dos algoritmos considerados.
 
 \section{Modelo do Sistema}
 \label{sec:modelo-sistema}
@@ -68,15 +66,15 @@ Sempre que a CPU passa a executar um processo diferente do último que a ocupou 
 
 \subsection{First-Come, First-Served}
 
-\pendencia
+FCFS seleciona o processo pronto com menor instante de chegada. Empates são resolvidos pelo menor \textit{pid}. É não preemptivo: após o despacho, o processo mantém a CPU até terminar a rajada corrente ou bloquear em E/S. Como a fila de prontos preserva a ordem de inserção, a política é simples e tem baixo overhead, mas pode sofrer efeito comboio quando rajadas longas chegam antes de curtas.
 
 \subsection{Round Robin}
 
-\pendencia
+Round Robin seleciona o primeiro processo da fila de prontos e limita sua execução a um \textit{quantum} de 4 unidades de tempo. Se a rajada não terminar até a expiração do \textit{quantum}, o processo retorna ao fim da fila; caso seja despachado outro processo, a troca é contabilizada. Essa preempção periódica favorece alternância entre processos, porém aumenta o custo de troca de contexto.
 
 \subsection{Prioridade não Preemptiva}
 
-\pendencia
+Prioridade escolhe, de modo não preemptivo, o processo pronto de maior valor de prioridade. Em empate, aplica menor instante de chegada e, depois, menor \textit{pid}. A chegada de um processo mais prioritário não interrompe uma rajada já em execução. Assim, a política explora a prioridade definida na carga, mas pode postergar processos de prioridade baixa.
 
 \subsection{Algoritmo Proposto}
 \label{sec:algoritmo-proposto}
@@ -119,7 +117,7 @@ onde $\mathit{espera}_p$ é o tempo que $p$ já aguarda na fila de prontos e $\b
 
 Em caso de empate na prioridade efetiva, desempata-se primeiro pelo menor instante de chegada e, persistindo o empate, pelo menor \textit{pid} — critério análogo ao adotado nos demais algoritmos avaliados, para manter consistência entre as comparações.
 
-\textbf{Benefício esperado.} Espera-se tempo médio de retorno menor que FCFS e Prioridade, aproximando-se do SJF ideal à medida que as estimativas convergem para o comportamento real de cada processo, com melhor equilíbrio entre os \textit{slowdowns} dos processos (índice de Jain) do que um SJF preditivo "puro" sem aging, já que o termo de aging evita que processos historicamente longos fiquem indefinidamente atrás de processos curtos recém-chegados.
+\textbf{Benefício esperado.} Espera-se melhor equilíbrio entre os \textit{slowdowns} que FCFS e Prioridade, pois o \textit{aging} evita que processos historicamente longos fiquem indefinidamente atrás de processos curtos recém-chegados. O turnaround pode se aproximar do SJF ideal à medida que as estimativas convergem, mas depende do ajuste dos parâmetros e do perfil da carga.
 
 \textbf{Limitações.} A estimativa da primeira rajada de cada processo é necessariamente imprecisa, por não haver histórico ainda; o algoritmo é sensível à escolha de $\alpha$ (memória curta vs. longa do histórico) e $\beta$ (força do aging), exigindo ajuste empírico; pode sofrer, em menor grau, do efeito comboio do SJF clássico caso vários processos longos acumulem histórico antes de processos curtos chegarem ao sistema; e mantém estado por processo ($\tau$, tempo de espera), overhead computacionalmente desprezível mas estruturalmente distinto dos algoritmos clássicos avaliados, que não mantêm esse tipo de estado.
 
@@ -156,35 +154,76 @@ O cenário \textit{Prioridades desbalanceadas} usa a mesma distribuição de raj
 
 \subsection{Métricas}
 
-\pendencia
+Para um processo $i$, o turnaround é $T_i=C_i-A_i$, em que $A_i$ é o instante de chegada e $C_i$ o de conclusão. Reporta-se a média de $T_i$ sobre os processos de cada execução. A segunda métrica é a quantidade de trocas de contexto, isto é, o número de vezes em que a CPU passa a um processo diferente; cada troca custa uma unidade de tempo nos experimentos.
+
+Também é calculado o \textit{slowdown} $S_i=T_i/(CPU_i+ES_i)$, onde o denominador é o tempo mínimo ideal do próprio processo, composto por suas rajadas de CPU e E/S. A justiça é medida pelo índice de Jain, em porcentagem:
+\begin{equation}
+J(\%) = \frac{(\sum_{i=1}^{n}S_i)^2}{n\sum_{i=1}^{n}S_i^2}\times100.
+\end{equation}
+Valores próximos de 100\% indicam \textit{slowdowns} mais homogêneos; por isso a métrica é interpretada junto do turnaround~\cite{jain1984}.
 
 \subsection{Procedimento Estatístico e Ambiente}
 
-\pendencia
+Foram executadas 1600 simulações: quatro cenários, quatro algoritmos e 100 \textit{seeds} (1 a 100), com 1000 processos por execução, \textit{quantum} 4 e custo de troca 1. Para cada cenário e algoritmo, as mesmas \textit{seeds} geram a mesma carga. O script \texttt{run\_experiments.sh} produz um CSV por execução; \texttt{consolidate\_results.py} valida a matriz experimental e calcula média, desvio-padrão amostral e IC95\% como $\bar{x}\pm1{,}96s/\sqrt{n}$. Os gráficos correspondentes e a tabela consolidada estão no repositório em \texttt{results/graphs} e \texttt{results/consolidated/summary.csv}.
 
 \section{Resultados e Discussão}
 
-\pendencia
+A Tabela~\ref{tab:resultados} resume as médias das 100 \textit{seeds}. Os intervalos de confiança são estreitos em relação às diferenças principais; os gráficos versionados apresentam as barras de IC95\% completas. O custo de CPU de uma mesma combinação cenário--\textit{seed} é idêntico para todos os algoritmos, assegurando que as diferenças decorrem do escalonamento e de seu overhead.
+
+\begin{table}[!htbp]
+\centering
+\caption{Médias das 100 seeds. T: turnaround; TC: trocas de contexto; J: Jain do slowdown (\%).}
+\label{tab:resultados}
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrr}
+\hline
+\textbf{Cenário} & \textbf{Algoritmo} & \textbf{T} & \textbf{TC} & \textbf{J} \\
+\hline
+Equilibrado & FCFS & 16206,6 & 2991,6 & 12,7 \\
+ & Round Robin & 25677,9 & 8966,7 & 77,8 \\
+ & Prioridade & 16248,6 & 2991,6 & 12,4 \\
+ & SJF Preditivo & 20565,2 & 2992,7 & 37,0 \\
+\hline
+I/O-bound & FCFS & 9061,8 & 5003,1 & 63,1 \\
+ & Round Robin & 15025,5 & 6002,5 & 92,1 \\
+ & Prioridade & 9075,9 & 5002,8 & 59,7 \\
+ & SJF Preditivo & 14187,7 & 5004,0 & 92,5 \\
+\hline
+CPU-bound & FCFS & 25331,9 & 1497,5 & 60,1 \\
+ & Round Robin & 48493,5 & 13660,4 & 95,5 \\
+ & Prioridade & 25336,5 & 1497,4 & 58,3 \\
+ & SJF Preditivo & 29384,5 & 1497,8 & 79,9 \\
+\hline
+Prioridades & FCFS & 16362,1 & 3008,3 & 12,9 \\
+ & Round Robin & 25998,8 & 9044,5 & 78,2 \\
+ & Prioridade & 16361,7 & 3008,2 & 12,7 \\
+ & SJF Preditivo & 20827,6 & 3009,4 & 37,7 \\
+\hline
+\end{tabular}
+}
+\end{table}
 
 \subsection{Tempo Médio de Retorno}
 
-\pendencia
+FCFS obteve o menor turnaround nos quatro cenários: 16206,6 no equilibrado, 9061,8 no I/O-bound, 25331,9 no CPU-bound e 16362,1 no de prioridades. Prioridade teve valores praticamente equivalentes. O SJF Preditivo ficou entre esses algoritmos e Round Robin no equilibrado e no cenário de prioridades, mas foi pior que FCFS/Prioridade; no I/O-bound aproximou-se de Round Robin. Round Robin apresentou o maior turnaround em todos os cenários, consequência do quantum curto e das trocas adicionais.
 
 \subsection{Trocas de Contexto}
 
-\pendencia
+Round Robin foi o algoritmo com mais trocas: 8966,7 no cenário equilibrado e 13660,4 no CPU-bound, contra aproximadamente 2992 e 1497 nas políticas não preemptivas. O padrão confirma o efeito da preempção por quantum. SJF Preditivo, FCFS e Prioridade são não preemptivos e tiveram contagens quase idênticas; logo, a variação de turnaround entre eles não é explicada pelo número de trocas.
 
 \subsection{Justiça dos Slowdowns}
 
-\pendencia
+Round Robin alcançou os maiores índices de Jain em todos os cenários (77,8\% a 95,5\%). O SJF Preditivo foi consistentemente mais justo que FCFS e Prioridade: no I/O-bound atingiu 92,5\%, próximo aos 92,1\% de Round Robin, e no CPU-bound chegou a 79,9\%. Nos cenários equilibrado e de prioridades, a justiça do algoritmo próprio (37,0\% e 37,7\%) ainda foi limitada, mas superou os cerca de 12--13\% das políticas não preemptivas clássicas.
 
 \subsection{Avaliação do Algoritmo Proposto}
 
-\pendencia
+O algoritmo próprio atingiu seu objetivo parcial de reduzir a disparidade de \textit{slowdown} sem introduzir preempções: sua quantidade de trocas permaneceu próxima à de FCFS e Prioridade. O ganho de justiça é mais evidente onde há muitas rajadas e retornos de E/S, pois o histórico observado torna a previsão mais informativa. Em contrapartida, as estimativas iniciais imprecisas e o \textit{aging} podem privilegiar processos que aguardam mais tempo, elevando o turnaround médio. Os resultados mostram, portanto, um compromisso: maior justiça que as políticas não preemptivas de referência, mas sem superar FCFS em turnaround.
 
+\FloatBarrier
 \section{Conclusão}
 
-\pendencia
+O simulador implementado permite comparar políticas de escalonamento sob cargas reprodutíveis, incluindo E/S paralela, custo de troca de contexto e chegadas aleatórias. A análise de 1600 execuções mostra que FCFS minimizou o turnaround nas configurações avaliadas, enquanto Round Robin maximizou a justiça ao custo de muitas trocas. O SJF Preditivo com \textit{aging} obteve ganhos expressivos de justiça em relação a FCFS e Prioridade, mantendo o overhead de troca dessas políticas não preemptivas, mas não reduziu o turnaround. Como continuidade, recomenda-se experimentar valores de $\alpha$, $\beta$ e quantum, além de uma modelagem de E/S com contenção.
 
 \bibliographystyle{IEEEtran}
 \bibliography{referencias}
