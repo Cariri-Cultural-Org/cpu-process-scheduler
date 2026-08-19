@@ -54,13 +54,10 @@ A divisão de tarefas entre os integrantes está em [`docs/DIVISAO_TAREFAS.md`](
 └── Makefile
 ```
 
-O núcleo do simulador já está implementado e testado: `main.c`, os módulos em `src/models/`
-(config, scheduler, process, simulator, metrics, workload) e os quatro algoritmos em
-`src/algorithms/` (fcfs, round_robin, priority, predictive_sjf), cada um com testes
-correspondentes em `tests/` (ver "Como rodar os testes"). O que ainda permanece como esqueleto
-— com comentários descrevendo o que falta implementar e a frente de trabalho responsável — são
-apenas os scripts `scripts/consolidate_results.py`, `scripts/generate_graphs.py` e
-`scripts/run_experiments.sh`. Ver a divisão completa em `docs/DIVISAO_TAREFAS.md`.
+O núcleo do simulador e o pipeline experimental estão implementados e testados: `main.c`, os
+módulos em `src/models/`, os quatro algoritmos em `src/algorithms/` e os scripts de execução em
+lote, consolidação estatística e geração de gráficos em `scripts/`. Ver a divisão completa em
+`docs/DIVISAO_TAREFAS.md`.
 
 ## Como compilar
 
@@ -106,17 +103,29 @@ make test
 
 Compila e executa um binário por arquivo `tests/test_*.c` usando o framework Unity
 (submodule em `tests/unity`); `test_stats.c` também aciona a suíte `unittest` em Python de
-`scripts/stats.py`.
+`scripts/stats.py`. `test_experiment_pipeline.c`, escrito em C, testa o pipeline completo em
+escala reduzida e verifica arquivos ausentes, duplicados e malformados.
 
 ## Como rodar os experimentos
 
 ```
 ./scripts/run_experiments.sh
+python3 scripts/consolidate_results.py
+python3 scripts/generate_graphs.py
 ```
 
-Script a ser implementado pela equipe para rodar todas as combinações de cenário x seed x
-algoritmo exigidas pelo enunciado e salvar as saídas em `results/raw/`. Os scripts Python de
-consolidação e geração de gráficos ficam em `scripts/` (ver `scripts/requirements.txt`).
+O primeiro comando executa, por padrão, as 1.600 combinações obrigatórias (4 cenários × 100
+seeds × 4 algoritmos), com 1.000 processos, quantum 4 e custo de troca 1, gravando um CSV por
+execução em `results/raw/`. Use `--help` para alterar a escala ou os diretórios — útil para
+experimentos complementares e testes rápidos.
+
+`consolidate_results.py` exige a matriz completa, rejeita resultados ausentes, duplicados,
+malformados ou com configurações inconsistentes e grava `results/consolidated/summary.csv`.
+Para cada cenário, algoritmo e métrica, o arquivo contém média, desvio padrão amostral e IC95%.
+
+`generate_graphs.py` produz três gráficos SVG em `results/graphs/`, um para cada métrica
+obrigatória, com média e barras de erro do IC95%. Os scripts Python utilizam apenas a biblioteca
+padrão; não há dependências externas para instalar.
 
 ## Entregáveis
 
