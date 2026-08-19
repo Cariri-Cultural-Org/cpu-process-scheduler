@@ -35,6 +35,11 @@ UNITY_SRC := $(UNITY_DIR)/unity.c
 
 TESTED_SRCS := $(filter-out $(SRC_DIR)/main.c,$(SRCS))
 
+# O teste do pipeline chama o binário real por meio de
+# scripts/run_experiments.sh, portanto precisa que o simulador também
+# esteja compilado mesmo quando o usuário executa apenas `make test`.
+$(BIN_DIR)/test_experiment_pipeline: $(TARGET)
+
 .PHONY: all clean run test
 
 all: $(TARGET)

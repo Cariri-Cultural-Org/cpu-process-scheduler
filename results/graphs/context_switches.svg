@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img">
+<title>Trocas de contexto por cenário — média e IC 95%</title>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="640.0" y="38" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold">Trocas de contexto por cenário</text>
+<text x="640.0" y="66" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#555">Média e intervalo de confiança de 95% entre seeds</text>
+<line x1="105.0" y1="565.00" x2="1245.0" y2="565.00" stroke="#dddddd" stroke-width="1"/>
+<text x="95.0" y="570.00" text-anchor="end" font-family="sans-serif" font-size="13">0</text>
+<line x1="105.0" y1="471.00" x2="1245.0" y2="471.00" stroke="#dddddd" stroke-width="1"/>
+<text x="95.0" y="476.00" text-anchor="end" font-family="sans-serif" font-size="13">2958</text>
+<line x1="105.0" y1="377.00" x2="1245.0" y2="377.00" stroke="#dddddd" stroke-width="1"/>
+<text x="95.0" y="382.00" text-anchor="end" font-family="sans-serif" font-size="13">5916</text>
+<line x1="105.0" y1="283.00" x2="1245.0" y2="283.00" stroke="#dddddd" stroke-width="1"/>
+<text x="95.0" y="288.00" text-anchor="end" font-family="sans-serif" font-size="13">8874</text>
+<line x1="105.0" y1="189.00" x2="1245.0" y2="189.00" stroke="#dddddd" stroke-width="1"/>
+<text x="95.0" y="194.00" text-anchor="end" font-family="sans-serif" font-size="13">11832</text>
+<line x1="105.0" y1="95.00" x2="1245.0" y2="95.00" stroke="#dddddd" stroke-width="1"/>
+<text x="95.0" y="100.00" text-anchor="end" font-family="sans-serif" font-size="13">14790</text>
+<line x1="105.0" y1="95.0" x2="105.0" y2="565.0" stroke="#333"/>
+<line x1="105.0" y1="565.0" x2="1245.0" y2="565.0" stroke="#333"/>
+<text transform="translate(28 330.00) rotate(-90)" text-anchor="middle" font-family="sans-serif" font-size="15">Quantidade de trocas</text>
+<rect x="137.35" y="469.93" width="53.58" height="95.07" fill="#4472C4"/>
+<line x1="164.14" y1="469.66" x2="164.14" y2="470.21" stroke="#111" stroke-width="1.5"/>
+<line x1="156.14" y1="469.66" x2="172.14" y2="469.66" stroke="#111" stroke-width="1.5"/>
+<line x1="156.14" y1="470.21" x2="172.14" y2="470.21" stroke="#111" stroke-width="1.5"/>
+<rect x="192.93" y="280.06" width="53.58" height="284.94" fill="#ED7D31"/>
+<line x1="219.71" y1="279.07" x2="219.71" y2="281.05" stroke="#111" stroke-width="1.5"/>
+<line x1="211.71" y1="279.07" x2="227.71" y2="279.07" stroke="#111" stroke-width="1.5"/>
+<line x1="211.71" y1="281.05" x2="227.71" y2="281.05" stroke="#111" stroke-width="1.5"/>
+<rect x="248.50" y="469.93" width="53.58" height="95.07" fill="#70AD47"/>
+<line x1="275.29" y1="469.66" x2="275.29" y2="470.21" stroke="#111" stroke-width="1.5"/>
+<line x1="267.29" y1="469.66" x2="283.29" y2="469.66" stroke="#111" stroke-width="1.5"/>
+<line x1="267.29" y1="470.21" x2="283.29" y2="470.21" stroke="#111" stroke-width="1.5"/>
+<rect x="304.08" y="469.90" width="53.58" height="95.10" fill="#A64D79"/>
+<line x1="330.86" y1="469.63" x2="330.86" y2="470.18" stroke="#111" stroke-width="1.5"/>
+<line x1="322.86" y1="469.63" x2="338.86" y2="469.63" stroke="#111" stroke-width="1.5"/>
+<line x1="322.86" y1="470.18" x2="338.86" y2="470.18" stroke="#111" stroke-width="1.5"/>
+<text x="247.50" y="590.00" text-anchor="middle" font-family="sans-serif" font-size="14">Equilibrado</text>
+<rect x="422.35" y="406.01" width="53.58" height="158.99" fill="#4472C4"/>
+<line x1="449.14" y1="405.75" x2="449.14" y2="406.28" stroke="#111" stroke-width="1.5"/>
+<line x1="441.14" y1="405.75" x2="457.14" y2="405.75" stroke="#111" stroke-width="1.5"/>
+<line x1="441.14" y1="406.28" x2="457.14" y2="406.28" stroke="#111" stroke-width="1.5"/>
+<rect x="477.93" y="374.26" width="53.58" height="190.74" fill="#ED7D31"/>
+<line x1="504.71" y1="373.89" x2="504.71" y2="374.63" stroke="#111" stroke-width="1.5"/>
+<line x1="496.71" y1="373.89" x2="512.71" y2="373.89" stroke="#111" stroke-width="1.5"/>
+<line x1="496.71" y1="374.63" x2="512.71" y2="374.63" stroke="#111" stroke-width="1.5"/>
+<rect x="533.50" y="406.02" width="53.58" height="158.98" fill="#70AD47"/>
+<line x1="560.29" y1="405.76" x2="560.29" y2="406.29" stroke="#111" stroke-width="1.5"/>
+<line x1="552.29" y1="405.76" x2="568.29" y2="405.76" stroke="#111" stroke-width="1.5"/>
+<line x1="552.29" y1="406.29" x2="568.29" y2="406.29" stroke="#111" stroke-width="1.5"/>
+<rect x="589.08" y="405.99" width="53.58" height="159.01" fill="#A64D79"/>
+<line x1="615.86" y1="405.72" x2="615.86" y2="406.25" stroke="#111" stroke-width="1.5"/>
+<line x1="607.86" y1="405.72" x2="623.86" y2="405.72" stroke="#111" stroke-width="1.5"/>
+<line x1="607.86" y1="406.25" x2="623.86" y2="406.25" stroke="#111" stroke-width="1.5"/>
+<text x="532.50" y="590.00" text-anchor="middle" font-family="sans-serif" font-size="14">I/O-bound</text>
+<rect x="707.35" y="517.41" width="53.58" height="47.59" fill="#4472C4"/>
+<line x1="734.14" y1="517.31" x2="734.14" y2="517.52" stroke="#111" stroke-width="1.5"/>
+<line x1="726.14" y1="517.31" x2="742.14" y2="517.31" stroke="#111" stroke-width="1.5"/>
+<line x1="726.14" y1="517.52" x2="742.14" y2="517.52" stroke="#111" stroke-width="1.5"/>
+<rect x="762.93" y="130.91" width="53.58" height="434.09" fill="#ED7D31"/>
+<line x1="789.71" y1="129.81" x2="789.71" y2="132.00" stroke="#111" stroke-width="1.5"/>
+<line x1="781.71" y1="129.81" x2="797.71" y2="129.81" stroke="#111" stroke-width="1.5"/>
+<line x1="781.71" y1="132.00" x2="797.71" y2="132.00" stroke="#111" stroke-width="1.5"/>
+<rect x="818.50" y="517.42" width="53.58" height="47.58" fill="#70AD47"/>
+<line x1="845.29" y1="517.31" x2="845.29" y2="517.52" stroke="#111" stroke-width="1.5"/>
+<line x1="837.29" y1="517.31" x2="853.29" y2="517.31" stroke="#111" stroke-width="1.5"/>
+<line x1="837.29" y1="517.52" x2="853.29" y2="517.52" stroke="#111" stroke-width="1.5"/>
+<rect x="874.08" y="517.40" width="53.58" height="47.60" fill="#A64D79"/>
+<line x1="900.86" y1="517.30" x2="900.86" y2="517.51" stroke="#111" stroke-width="1.5"/>
+<line x1="892.86" y1="517.30" x2="908.86" y2="517.30" stroke="#111" stroke-width="1.5"/>
+<line x1="892.86" y1="517.51" x2="908.86" y2="517.51" stroke="#111" stroke-width="1.5"/>
+<text x="817.50" y="590.00" text-anchor="middle" font-family="sans-serif" font-size="14">CPU-bound</text>
+<rect x="992.35" y="469.40" width="53.58" height="95.60" fill="#4472C4"/>
+<line x1="1019.14" y1="469.12" x2="1019.14" y2="469.69" stroke="#111" stroke-width="1.5"/>
+<line x1="1011.14" y1="469.12" x2="1027.14" y2="469.12" stroke="#111" stroke-width="1.5"/>
+<line x1="1011.14" y1="469.69" x2="1027.14" y2="469.69" stroke="#111" stroke-width="1.5"/>
+<rect x="1047.92" y="277.59" width="53.58" height="287.41" fill="#ED7D31"/>
+<line x1="1074.71" y1="276.57" x2="1074.71" y2="278.61" stroke="#111" stroke-width="1.5"/>
+<line x1="1066.71" y1="276.57" x2="1082.71" y2="276.57" stroke="#111" stroke-width="1.5"/>
+<line x1="1066.71" y1="278.61" x2="1082.71" y2="278.61" stroke="#111" stroke-width="1.5"/>
+<rect x="1103.50" y="469.41" width="53.58" height="95.59" fill="#70AD47"/>
+<line x1="1130.29" y1="469.12" x2="1130.29" y2="469.69" stroke="#111" stroke-width="1.5"/>
+<line x1="1122.29" y1="469.12" x2="1138.29" y2="469.12" stroke="#111" stroke-width="1.5"/>
+<line x1="1122.29" y1="469.69" x2="1138.29" y2="469.69" stroke="#111" stroke-width="1.5"/>
+<rect x="1159.08" y="469.37" width="53.58" height="95.63" fill="#A64D79"/>
+<line x1="1185.86" y1="469.08" x2="1185.86" y2="469.66" stroke="#111" stroke-width="1.5"/>
+<line x1="1177.86" y1="469.08" x2="1193.86" y2="469.08" stroke="#111" stroke-width="1.5"/>
+<line x1="1177.86" y1="469.66" x2="1193.86" y2="469.66" stroke="#111" stroke-width="1.5"/>
+<text x="1102.50" y="590.00" text-anchor="middle" font-family="sans-serif" font-size="14">Prioridades</text>
+<rect x="105.00" y="650.00" width="18" height="18" fill="#4472C4"/>
+<text x="131.00" y="664.00" font-family="sans-serif" font-size="13">FCFS</text>
+<rect x="390.00" y="650.00" width="18" height="18" fill="#ED7D31"/>
+<text x="416.00" y="664.00" font-family="sans-serif" font-size="13">Round Robin</text>
+<rect x="675.00" y="650.00" width="18" height="18" fill="#70AD47"/>
+<text x="701.00" y="664.00" font-family="sans-serif" font-size="13">Prioridade</text>
+<rect x="960.00" y="650.00" width="18" height="18" fill="#A64D79"/>
+<text x="986.00" y="664.00" font-family="sans-serif" font-size="13">SJF Preditivo + Aging</text>
+</svg>

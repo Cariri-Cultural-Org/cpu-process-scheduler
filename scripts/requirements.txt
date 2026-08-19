@@ -1,7 +1,2 @@
-# Dependências sugeridas para os scripts de análise (frente: Cícero Jesus).
-# Ajustar conforme as bibliotecas efetivamente utilizadas em scripts/.
-#
-# pandas
-# numpy
-# scipy
-# matplotlib
+# Os scripts do pipeline usam apenas a biblioteca padrão do Python 3.
+# Não há dependências externas para instalar.
